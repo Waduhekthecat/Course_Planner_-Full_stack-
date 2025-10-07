@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card';
 import { AcademicPlanGrid } from './components/AcademicPlanGrid';
 import { Calendar, GraduationCap, Tags, Zap, Moon, Sun } from 'lucide-react';
 
+// Backend API URL *********
+const API_URL = 'http://localhost:5000';
+
 // Mock data
 const majors = [
   { id: '1', name: 'Computer Science', degree: 'Bachelor of Science', duration: '4 years' },
@@ -48,6 +51,8 @@ export default function App() {
   const [academicPlan, setAcademicPlan] = useState<Semester[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  // *********
+  const [error, setError] = useState<string>('');
 
   // Handle dark mode toggle
   useEffect(() => {
@@ -70,131 +75,159 @@ export default function App() {
     }
   };
 
-  const generateAcademicPlan = () => {
+  const generateAcademicPlan = async () => {
     if (!selectedMajor) return;
     
     setIsGenerating(true);
-    
-    // Simulate academic plan generation
-    setTimeout(() => {
-      const selectedMajorData = majors.find(m => m.id === selectedMajor);
-      if (!selectedMajorData) return;
+    // *********
+    setError('');
 
-      // Generate 8-semester plan based on major
-      const samplePlan: Semester[] = [
-        {
-          number: 1,
-          year: 'Freshman',
-          season: 'Fall',
-          courses: [
-            { code: 'ENG101', name: 'English Composition I', credits: 3, type: 'Core' },
-            { code: 'MATH111', name: 'College Algebra', credits: 4, type: 'Core' },
-            { code: 'HIST101', name: 'World History', credits: 3, type: 'Core' },
-            { code: 'CS101', name: 'Introduction to Computing', credits: 3, type: 'Major' },
-            { code: 'PE101', name: 'Physical Education', credits: 1, type: 'Core' }
-          ],
-          totalCredits: 14
+    try {
+      const response = await fetch(`${API_URL}/planner/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          number: 2,
-          year: 'Freshman',
-          season: 'Spring',
-          courses: [
-            { code: 'ENG102', name: 'English Composition II', credits: 3, type: 'Core' },
-            { code: 'MATH112', name: 'Calculus I', credits: 4, type: 'Core' },
-            { code: 'PHYS101', name: 'General Physics I', credits: 4, type: 'Core' },
-            { code: 'CS102', name: 'Programming Fundamentals', credits: 4, type: 'Major' }
-          ],
-          totalCredits: 15
-        },
-        {
-          number: 3,
-          year: 'Sophomore',
-          season: 'Fall',
-          courses: [
-            { code: 'MATH213', name: 'Calculus II', credits: 4, type: 'Core' },
-            { code: 'PHYS102', name: 'General Physics II', credits: 4, type: 'Core' },
-            { code: 'CS201', name: 'Data Structures', credits: 4, type: 'Major' },
-            { code: 'STAT201', name: 'Statistics', credits: 3, type: 'Major' },
-            { code: 'PHIL101', name: 'Ethics', credits: 3, type: 'Core' }
-          ],
-          totalCredits: 18
-        },
-        {
-          number: 4,
-          year: 'Sophomore',
-          season: 'Spring',
-          courses: [
-            { code: 'CS202', name: 'Algorithms', credits: 4, type: 'Major' },
-            { code: 'CS203', name: 'Computer Systems', credits: 4, type: 'Major' },
-            { code: 'MATH301', name: 'Discrete Mathematics', credits: 3, type: 'Major' },
-            { code: 'ECON101', name: 'Microeconomics', credits: 3, type: 'Elective' },
-            { code: 'ART101', name: 'Art Appreciation', credits: 2, type: 'Core' }
-          ],
-          totalCredits: 16
-        },
-        {
-          number: 5,
-          year: 'Junior',
-          season: 'Fall',
-          courses: [
-            { code: 'CS301', name: 'Database Systems', credits: 4, type: 'Major' },
-            { code: 'CS302', name: 'Software Engineering', credits: 4, type: 'Major' },
-            { code: 'CS303', name: 'Operating Systems', credits: 4, type: 'Major' },
-            { code: 'PSYC101', name: 'General Psychology', credits: 3, type: 'Elective' }
-          ],
-          totalCredits: 15
-        },
-        {
-          number: 6,
-          year: 'Junior',
-          season: 'Spring',
-          courses: [
-            { code: 'CS304', name: 'Computer Networks', credits: 4, type: 'Major' },
-            { code: 'CS305', name: 'Web Development', credits: 3, type: 'Major' },
-            { code: 'CS306', name: 'Mobile App Development', credits: 3, type: 'Elective' },
-            { code: 'BUS201', name: 'Business Communications', credits: 3, type: 'Minor' },
-            { code: 'SCI201', name: 'Environmental Science', credits: 3, type: 'Elective' }
-          ],
-          totalCredits: 16
-        },
-        {
-          number: 7,
-          year: 'Senior',
-          season: 'Fall',
-          courses: [
-            { code: 'CS401', name: 'Machine Learning', credits: 4, type: 'Major' },
-            { code: 'CS402', name: 'Cybersecurity', credits: 3, type: 'Major' },
-            { code: 'CS490', name: 'Senior Capstone I', credits: 3, type: 'Major' },
-            { code: 'BUS301', name: 'Project Management', credits: 3, type: 'Minor' },
-            { code: 'COMM201', name: 'Public Speaking', credits: 2, type: 'Core' }
-          ],
-          totalCredits: 15
-        },
-        {
-          number: 8,
-          year: 'Senior',
-          season: 'Spring',
-          courses: [
-            { code: 'CS403', name: 'Artificial Intelligence', credits: 4, type: 'Major' },
-            { code: 'CS404', name: 'Cloud Computing', credits: 3, type: 'Elective' },
-            { code: 'CS491', name: 'Senior Capstone II', credits: 3, type: 'Major' },
-            { code: 'BUS401', name: 'Entrepreneurship', credits: 3, type: 'Minor' },
-            { code: 'PHIL301', name: 'Technology Ethics', credits: 3, type: 'Elective' }
-          ],
-          totalCredits: 16
-        }
-      ];
+        body: JSON.stringify({ major: selectedMajor}),
+      });
 
-      setAcademicPlan(samplePlan);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to generate academic plan');
+      }
+
+      setAcademicPlan(result.data.semesters);
       setIsGenerating(false);
-    }, 2000);
+
+    } catch (err) {
+      console.error('Error generating plan:', err);
+      setError(err instanceof Error ? err.message : 'Failed to generate plan. Please try again.');
+      setIsGenerating(false);
+    }
   };
+
+  //   // Simulate academic plan generation
+  //   setTimeout(() => {
+  //     const selectedMajorData = majors.find(m => m.id === selectedMajor);
+  //     if (!selectedMajorData) return;
+
+  //     // Generate 8-semester plan based on major
+  //     const samplePlan: Semester[] = [
+  //       {
+  //         number: 1,
+  //         year: 'Freshman',
+  //         season: 'Fall',
+  //         courses: [
+  //           { code: 'ENG101', name: 'English Composition I', credits: 3, type: 'Core' },
+  //           { code: 'MATH111', name: 'College Algebra', credits: 4, type: 'Core' },
+  //           { code: 'HIST101', name: 'World History', credits: 3, type: 'Core' },
+  //           { code: 'CS101', name: 'Introduction to Computing', credits: 3, type: 'Major' },
+  //           { code: 'PE101', name: 'Physical Education', credits: 1, type: 'Core' }
+  //         ],
+  //         totalCredits: 14
+  //       },
+  //       {
+  //         number: 2,
+  //         year: 'Freshman',
+  //         season: 'Spring',
+  //         courses: [
+  //           { code: 'ENG102', name: 'English Composition II', credits: 3, type: 'Core' },
+  //           { code: 'MATH112', name: 'Calculus I', credits: 4, type: 'Core' },
+  //           { code: 'PHYS101', name: 'General Physics I', credits: 4, type: 'Core' },
+  //           { code: 'CS102', name: 'Programming Fundamentals', credits: 4, type: 'Major' }
+  //         ],
+  //         totalCredits: 15
+  //       },
+  //       {
+  //         number: 3,
+  //         year: 'Sophomore',
+  //         season: 'Fall',
+  //         courses: [
+  //           { code: 'MATH213', name: 'Calculus II', credits: 4, type: 'Core' },
+  //           { code: 'PHYS102', name: 'General Physics II', credits: 4, type: 'Core' },
+  //           { code: 'CS201', name: 'Data Structures', credits: 4, type: 'Major' },
+  //           { code: 'STAT201', name: 'Statistics', credits: 3, type: 'Major' },
+  //           { code: 'PHIL101', name: 'Ethics', credits: 3, type: 'Core' }
+  //         ],
+  //         totalCredits: 18
+  //       },
+  //       {
+  //         number: 4,
+  //         year: 'Sophomore',
+  //         season: 'Spring',
+  //         courses: [
+  //           { code: 'CS202', name: 'Algorithms', credits: 4, type: 'Major' },
+  //           { code: 'CS203', name: 'Computer Systems', credits: 4, type: 'Major' },
+  //           { code: 'MATH301', name: 'Discrete Mathematics', credits: 3, type: 'Major' },
+  //           { code: 'ECON101', name: 'Microeconomics', credits: 3, type: 'Elective' },
+  //           { code: 'ART101', name: 'Art Appreciation', credits: 2, type: 'Core' }
+  //         ],
+  //         totalCredits: 16
+  //       },
+  //       {
+  //         number: 5,
+  //         year: 'Junior',
+  //         season: 'Fall',
+  //         courses: [
+  //           { code: 'CS301', name: 'Database Systems', credits: 4, type: 'Major' },
+  //           { code: 'CS302', name: 'Software Engineering', credits: 4, type: 'Major' },
+  //           { code: 'CS303', name: 'Operating Systems', credits: 4, type: 'Major' },
+  //           { code: 'PSYC101', name: 'General Psychology', credits: 3, type: 'Elective' }
+  //         ],
+  //         totalCredits: 15
+  //       },
+  //       {
+  //         number: 6,
+  //         year: 'Junior',
+  //         season: 'Spring',
+  //         courses: [
+  //           { code: 'CS304', name: 'Computer Networks', credits: 4, type: 'Major' },
+  //           { code: 'CS305', name: 'Web Development', credits: 3, type: 'Major' },
+  //           { code: 'CS306', name: 'Mobile App Development', credits: 3, type: 'Elective' },
+  //           { code: 'BUS201', name: 'Business Communications', credits: 3, type: 'Minor' },
+  //           { code: 'SCI201', name: 'Environmental Science', credits: 3, type: 'Elective' }
+  //         ],
+  //         totalCredits: 16
+  //       },
+  //       {
+  //         number: 7,
+  //         year: 'Senior',
+  //         season: 'Fall',
+  //         courses: [
+  //           { code: 'CS401', name: 'Machine Learning', credits: 4, type: 'Major' },
+  //           { code: 'CS402', name: 'Cybersecurity', credits: 3, type: 'Major' },
+  //           { code: 'CS490', name: 'Senior Capstone I', credits: 3, type: 'Major' },
+  //           { code: 'BUS301', name: 'Project Management', credits: 3, type: 'Minor' },
+  //           { code: 'COMM201', name: 'Public Speaking', credits: 2, type: 'Core' }
+  //         ],
+  //         totalCredits: 15
+  //       },
+  //       {
+  //         number: 8,
+  //         year: 'Senior',
+  //         season: 'Spring',
+  //         courses: [
+  //           { code: 'CS403', name: 'Artificial Intelligence', credits: 4, type: 'Major' },
+  //           { code: 'CS404', name: 'Cloud Computing', credits: 3, type: 'Elective' },
+  //           { code: 'CS491', name: 'Senior Capstone II', credits: 3, type: 'Major' },
+  //           { code: 'BUS401', name: 'Entrepreneurship', credits: 3, type: 'Minor' },
+  //           { code: 'PHIL301', name: 'Technology Ethics', credits: 3, type: 'Elective' }
+  //         ],
+  //         totalCredits: 16
+  //       }
+  //     ];
+
+  //     setAcademicPlan(samplePlan);
+  //     setIsGenerating(false);
+  //   }, 2000);
+  // };
 
   const resetSelection = () => {
     setSelectedMajor('');
     setSelectedTags([]);
     setAcademicPlan([]);
+    setError('');
   };
 
   return (
