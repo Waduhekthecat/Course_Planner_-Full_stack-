@@ -1,0 +1,29 @@
+Calculus 2
+Discrete Mathematics
+Linear Algebra
+Probability 
+Introduction to Programming
+Computer Science 1
+Computer Science 2
+Assembly Language
+Data Structures
+Advanced Data Structures
+Database and Design
+Software Engineering
+Operating Systems
+Programming Language Concepts
+Computer Architecture + Lab
+Senior Capstone
+Advanced Technical Writing
+Web Application Development
+Mobile Application Development
+Cyber Security 1
+Cyber Security 2
+Game Programming
+Introduction to AI
+Computer Forensics
+Numerical Methods
+
+[NOT_YET_ADDED_TO_DB]
+Digital Circuits + Lab
+Telecommunications + Lab

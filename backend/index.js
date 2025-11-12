@@ -3,7 +3,6 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import courseRoutes from './routes/courses.js';
-import plannerRoutes from './routes/planner.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,7 +13,6 @@ app.use(express.json());
 
 // Routes
 app.use('/courses', courseRoutes);
-app.use('/planner', plannerRoutes);
 
 // Test route
 app.get('/', (req, res) => {

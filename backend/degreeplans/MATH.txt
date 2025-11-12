@@ -1,0 +1,75 @@
+Calculus 2
+Calculus 3
+Advanced Calculus
+Multivariable Calculus
+Linear Algebra
+Discrete Mathematics
+Abstract Algebra
+Differential Equations
+Number Theory
+Mathematics Software
+Introduction to Analysis
+Complex Analysis
+Numerical Analysis
+Risk Modeling
+Differential Geometry
+Senior Thesis in Math
+Advanced Mathematics 
+Introduction to Probability
+Introduction to Statistics
+Advanced Technical Writing
+Numerical Linear Algebra
+Calculus on Manifolds
+Introduction to Real Analysis 1
+Introduction to Real Analysis 2
+Partial Differential Equations
+Introduction to Topology
+Functions and Modeling
+Problem Solving
+
+121 | MATH | Calculus 1
+122 | MATH | Calculus 2
+123 | MATH | Calculus 3
+200 | MATH | Advanced Calculus
+210 | MATH | Multivariable Calculus
+220 | MATH | Linear Algebra
+230 | MATH | Discrete Mathematics
+240 | MATH | Abstract Algebra
+250 | MATH | Differential Equations
+280 | MATH | Number Theory
+290 | MATH | Mathematics Software
+300 | MATH | Introduction to Analysis
+310 | MATH | Complex Analysis
+320 | MATH | Numerical Analysis
+330 | MATH | Risk Modeling
+340 | MATH | Differential Geometry
+490 | MATH | Senior Thesis in Math
+
+'Calculus 2',
+'Calculus 3',
+'Advanced Calculus',
+'Multivariable Calculus',
+'Linear Algebra',
+'Discrete Mathematics',
+'Advanced Mathematics',
+'Abstract Algebra',
+'Differential Equations',
+'Introduction to Probability',
+'Introduction to Statistics',
+'Number Theory',
+'Mathematics Software',
+'Introduction to Analysis',
+'Complex Analysis',
+'Numerical Analysis',
+'Risk Modeling',
+'Differential Geometry',
+'Senior Thesis in Math',
+'Advanced Technical Writing',
+'Numerical Linear Algebra',
+'Calculus on Manifolds',
+'Introduction to Real Analysis 1',
+'Introduction to Real Analysis 2',
+'Partial Differential Equations',
+'Introduction to Topology',
+'Functions and Modeling',
+'Problem Solving'
