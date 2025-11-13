@@ -3,10 +3,14 @@ World Art Survey 2
 Art History 1
 Art History 2
 Design Foundations
+Art of the Ancient Greek World
+Drawing Foundations
 Painting
 Digital Photography
+Digital Illustration
+Fibers
+Video Arts
 Intermediate Drawing
-Drawing Foundations
 Intermediate Painting
 Advanced Painting
 Advanced Digital Photography
@@ -15,20 +19,13 @@ Illustration
 Ceramics
 Modern Art
 Life Drawing
-Print Making
+Studio Art
 Darkroom Photography
 Graphic Design
 Advanced Drawing
-Senior Seminar in Ar
-Fibers
-Advanced Fibers
 Graphic Novel Design
-Video Arts
-Advanced Life Drawing
-Art of the Ancient Greek World
-Digital Illustration
-Studio Art
+Senior Seminar in Art
+ Advanced Fibers
+ Advanced Life Drawing
 
-[NOT_YET_ADDED_TO_DB]
-Advanced Life Drawing
-Advanced Fibers
+Print Making*

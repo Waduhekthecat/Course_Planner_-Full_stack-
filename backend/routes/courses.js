@@ -1,6 +1,13 @@
 import express from 'express';
 import { supabase } from '../config/supabase.js';
-import { readDegreePlan } from '../utils/readdegreeplan.js';
+import { 
+  readDegreePlan, 
+  calculateCoursePriority, 
+  mapMajorToDegreeCode, 
+  bestCreditSubset, 
+  buildPrerequisiteMap,
+  countCourseCredits
+} from '../utils/index.js';
 
 const router = express.Router();
 
@@ -10,17 +17,17 @@ router.post('/generate', async (req, res) => {
     const { major } = req.body;
     const degreeCode = mapMajorToDegreeCode(major);
     if (!degreeCode) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Make sure to select a valid major of interest' 
+        error: 'Make sure to select a valid major of interest'
       });
     }
-    
+
     const majorCourses = readDegreePlan(degreeCode);
     if (!majorCourses) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: `Degree plan not found for ${degreeCode}` 
+        error: `Degree plan not found for ${degreeCode}`
       });
     }
 
@@ -87,17 +94,26 @@ router.post('/generate', async (req, res) => {
 
     const genEduCourses = readDegreePlan('GENERAL');
     if (!genEduCourses) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: `General Education courses not found` 
+        error: `General Education courses not found`
       });
     }
 
-    let reqCourses = [...genEduCourses, ...genElectives, ...majorCourses];
-    reqCourses = reqCourses.map(c => c.replace(/^'+|'+$/g, '').trim());
+    let reqCourses = [...genElectives, ...genEduCourses, ...majorCourses];
+    reqCourses = reqCourses.map(c => {
+      // Remove leading/trailing single quotes
+      let cleaned = c.replace(/^'+|'+$/g, '');
+
+      // Add a leading space for specific courses
+      if (cleaned === 'Advanced Fibers' || cleaned === 'Advanced Life Drawing') {
+        cleaned = ' ' + cleaned;
+      }
+
+      return cleaned;
+    });
 
     console.log(reqCourses);
-    
 
     const { data: requiredCourses, error } = await supabase
       .from('Courses')
@@ -110,168 +126,144 @@ router.post('/generate', async (req, res) => {
       console.log("required courses: ", reqCourses.length);
       console.log("courses found in DB: ", requiredCourses.length);
     };
-    
-    // Initialize 8 semesters
+
+    requiredCourses.forEach(course => {
+      course.course_code = getCourseCode(course);
+    });
+    const prereqMap = buildPrerequisiteMap(requiredCourses);
+
+    const priorityMap = calculateCoursePriority(prereqMap);
+
+    requiredCourses.forEach(course => {
+      course.priority = priorityMap[course.title] || 0;
+    });
+
+    // console.log("Prereq Map: ", prereqMap);
+    // console.log("Priority map: ", priorityMap);
+
     const semesters = Array.from({ length: 8 }, (_, i) => ({
       number: i + 1,
-      year: ['Freshman','Freshman','Sophomore','Sophomore','Junior','Junior','Senior','Senior'][i],
+      year: ['Freshman', 'Freshman', 'Sophomore', 'Sophomore', 'Junior', 'Junior', 'Senior', 'Senior'][i],
       season: i % 2 === 0 ? 'Fall' : 'Spring',
       courses: [],
       totalCredits: 0
     }));
 
-    const TARGET_CREDITS = 12;
-    const MAX_CREDITS = 15;
-    const completedCourses = [];
-    let inProgressCourses = [];
+    console.log(countCourseCredits(requiredCourses));
+
+    let completed = [];
+    let inProgress = [];
     let remainingCourses = [...requiredCourses];
-    const numSemesters = semesters.length;
-    const avgCoursesPerSemester = Math.ceil(requiredCourses.length / numSemesters);
 
-    // Prioritize GenEd courses first, then by fewer prerequisites
-    remainingCourses.sort((a, b) => {
-      if (a.department_ID === 'GEN' && b.department_ID !== 'GEN') return -1;
-      if (b.department_ID === 'GEN' && a.department_ID !== 'GEN') return 1;
-      return (a.prerequisites?.length || 0) - (b.prerequisites?.length || 0);
-    });
+    for (let semester of semesters) {
+      completed.push(...inProgress);
+      inProgress = [];
 
-    let addedAnyCourse = true;
+      const schedulableCourses = remainingCourses.filter(course => prereqMet(course, completed, semester));
 
-    while (remainingCourses.length > 0 && addedAnyCourse) {
-      addedAnyCourse = false;
+      if (schedulableCourses.length === 0) {
+        console.log(`Semester ${semester.number}: no courses can be scheduled this semester (prereqs or credits)`);
+        continue;
+      }
 
-      for (let semester of semesters) {
-        completedCourses.push(...inProgressCourses);
-        inProgressCourses = [];
+      const pGroups = {};
+      for (let course of schedulableCourses) {
+        if (!pGroups[course.priority]) pGroups[course.priority] = [];
+        pGroups[course.priority].push(course);
+      }
 
-        let semesterUpdated = true;
-        while (semesterUpdated && semester.totalCredits < MAX_CREDITS && semester.courses.length < avgCoursesPerSemester) {
-          semesterUpdated = false;
+      const sortedPGroups = Object.keys(pGroups)
+        .map(Number)
+        .sort((a,b)=>b-a);
 
-          for (let course of remainingCourses) {
-            if (!prerequisitesMet(course, completedCourses)) continue;
-            if (semester.totalCredits + course.credits > MAX_CREDITS) continue;
-            if (semester.totalCredits >= TARGET_CREDITS && (semester.totalCredits + course.credits) > TARGET_CREDITS) {
-              if (semester.totalCredits + course.credits > MAX_CREDITS) continue;
-            }
-            
-            semester.courses.push(
-              formatCourse(course, course.department_ID === 'GEN' ? 'GenEd' : 'Major')
-            );
-            semester.totalCredits += course.credits;
-            inProgressCourses.push(course);
-            remainingCourses = remainingCourses.filter(c => c !== course);
-            semesterUpdated = true;    
-            addedAnyCourse = true;     
-            break;                     
-          }
+      for (let priority of sortedPGroups) {
+        const tierCourses = pGroups[priority];
+        const remainingCredits = 16-semester.totalCredits;
+
+        const availCourses = tierCourses.filter(c=>c.credits<=remainingCredits);
+
+        let coursesToAdd;
+        const totalAvailCredits = availCourses.reduce((sum,c) => sum + c.credits, 0);
+        
+        if (totalAvailCredits <= remainingCredits) {
+          coursesToAdd = availCourses;
+        } else {
+          coursesToAdd = bestCreditSubset(availCourses, remainingCredits);
         }
 
-      console.log(`Semester ${semester.number} (${semester.year} ${semester.season}):`);
-      console.log(`Total Credits: ${semester.totalCredits}`);
-      console.log('Courses:');
-      semester.courses.forEach(c => console.log(` - ${c.name} (${c.credits} credits)`));
-      console.log('----------------------------------------');
+        for (let course of coursesToAdd) {
+          semester.courses.push(course);
+          semester.totalCredits += course.credits;
+          inProgress.push(course);
+
+          const idx = remainingCourses.indexOf(course);
+          if (idx > -1) remainingCourses.splice(idx, 1);
+
+        }
+      }
+      if (semester.totalCredits < 12) {
+        const underfillCourses = remainingCourses.filter(c => prereqMet(c, completed, semester));
+        for (let course of underfillCourses) {
+          if (semester.totalCredits >= 12) break;
+          semester.courses.push(course);
+          semester.totalCredits += course.credits;
+          inProgress.push(course);
+
+          const idx = remainingCourses.indexOf(course);
+          if (idx > -1) remainingCourses.splice(idx, 1);
+        }
       }
     }
-
-    completedCourses.push(...inProgressCourses);
-    inProgressCourses = [];
 
     if (remainingCourses.length > 0) {
       console.log("⚠️ Unscheduled Courses Detected:");
       remainingCourses.forEach(course => {
         console.log(
-          ` - ${course.title} (${course.department_ID}${course.course_id}) | Credits: ${course.credits} | Prereqs: ${course.Prerequisites}`
+          ` - ${course.title}`
         );
       });
     } else {
       console.log("✅ All required courses were scheduled!");
     }
 
-    if (inProgressCourses.length > 0) {
-      console.log("⚠️ Courses left in progress:");
-      inProgressCourses.forEach(course => {
-        console.log(` - ${course.title} (${course.department_ID}${course.course_id})`);
-      });
-    }
+    const formatSemesters = semesters.map(sem => ({
+      ...sem,
+      courses: sem.courses.map(course => ({
+        code: course.course_code,
+        name: course.title,
+        credits: course.credits,
+        type: 'Major' 
+      }))
+    }));
 
     res.json({
       success: true,
       data: {
-        semesters,
-        totalCredits: semesters.reduce((sum, sem) => sum + sem.totalCredits, 0),
-        totalCourses: semesters.reduce((sum, sem) => sum + sem.courses.length, 0)
+        semesters: formatSemesters,
+        totalCredits: formatSemesters.reduce((sum, sem) => sum + sem.totalCredits, 0),
+        totalCourses: formatSemesters.reduce((sum, sem) => sum + sem.courses.length, 0)
       }
     });
+
   } catch (err) {
     console.error('Server error:', err);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error'
     });
   }
 });
 
-// Helper to get available majors
-router.get('/majors', async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: [
-          { id: '1', name: 'Computer Science', degree: 'Bachelor of Science', duration: '4 years' },
-          { id: '2', name: 'Fine Arts', degree: 'Bachelor of Arts', duration: '4 years' },
-          { id: '3', name: 'Geography', degree: 'Bachelor of Science', duration: '4 years' },
-          { id: '4', name: 'Legal Studies', degree: 'Bachelor of Arts', duration: '4 years' },
-          { id: '5', name: 'Mathematics', degree: 'Bachelor of Science', duration: '4 years' }
-      ]
-    });
-  } catch (err) {
-    console.error('Server error:', err);
-    res.status(500).json({ 
-      success: false,
-      error: 'Internal server error' 
-    });
-  }
-});
-
-
-// Helper function to parse prerequisites
-const parsePrerequisites = (prereqString) => {
-  if (!prereqString || prereqString === 'NULL') return [];
-  return prereqString.split(',').map(p => p.trim());
-};
-
-// Helper function to check if prerequisites are met
-function prerequisitesMet(course, completedCourses, semesterNumber) {
-  if (!course.prerequisites || course.prerequisites.length === 0) return true;
-
-  return course.prerequisites.every(prereq => {
-    if (prereq === 'FINAL SEMESTER') {
-      return semesterNumber === numSemesters;
-    }
-    return completedCourses.some(c => c.course_id === prereq);
-  });
+function getCourseCode(course) {
+  if (!course || !course.department_ID || !course.course_id) return null;
+  return `${course.department_ID}${course.course_id}`;
 }
 
-// Helper function to format course for frontend
-const formatCourse = (course, courseType = 'Major') => ({
-  code: `${course.department_ID}${course.course_id}`,
-  name: course.title,
-  credits: course.credits,
-  type: courseType
-});
-
-// Helper to get department_ID from user input desired major
-const mapMajorToDegreeCode = (majorId) => {
-  const majorMap = {
-    1: 'CSCI',
-    2: 'ARTS',
-    3: 'GEOG',
-    4: 'LEGL',
-    5: 'MATH'
-  };
-  return majorMap[majorId] || null;
+function prereqMet(course, completed, semester) {
+  if (!course.Prerequisites || course.Prerequisites === 'NULL') return true;
+  if (course.Prerequisites == 'FINAL SEMESTER' && semester.number == 8) return true;
+  if (completed.some(c => c.course_code === course.Prerequisites)) return true;
+  return false;
 }
 
 export default router;

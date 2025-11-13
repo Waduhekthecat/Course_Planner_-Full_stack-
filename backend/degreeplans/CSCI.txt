@@ -23,7 +23,5 @@ Game Programming
 Introduction to AI
 Computer Forensics
 Numerical Methods
-
-[NOT_YET_ADDED_TO_DB]
 Digital Circuits + Lab
 Telecommunications + Lab
