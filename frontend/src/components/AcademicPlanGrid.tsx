@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -28,6 +28,11 @@ interface AcademicPlanGridProps {
 export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps) {
   const [currentSemesterIndex, setCurrentSemesterIndex] = useState(0);
 
+  // Reset semester index when semesters change
+  useEffect(() => {
+    setCurrentSemesterIndex(0);
+  }, [semesters]);
+
   const getTypeColor = (type?: string) => {
     switch (type) {
       case 'Core': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-200 dark:border-orange-800';
@@ -40,11 +45,11 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
 
   const totalCredits = semesters.reduce((sum, semester) => sum + semester.totalCredits, 0);
   const currentSemester = semesters[currentSemesterIndex];
-  
+
   const goToPreviousSemester = () => {
     setCurrentSemesterIndex(Math.max(0, currentSemesterIndex - 1));
   };
-  
+
   const goToNextSemester = () => {
     setCurrentSemesterIndex(Math.min(semesters.length - 1, currentSemesterIndex + 1));
   };
@@ -84,9 +89,9 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
 
             {/* Semester Selector */}
             <div className="flex items-center gap-4">
-              <Select 
-                value={currentSemesterIndex.toString()} 
-                onValueChange={(value) => setCurrentSemesterIndex(parseInt(value))}
+              <Select
+                value={currentSemesterIndex.toString()}
+                onValueChange={(value: string) => setCurrentSemesterIndex(parseInt(value))}
               >
                 <SelectTrigger className="w-60">
                   <SelectValue />
@@ -99,7 +104,7 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
                   ))}
                 </SelectContent>
               </Select>
-              
+
               {/* Progress Indicator */}
               <div className="text-sm text-muted-foreground">
                 {currentSemesterIndex + 1} of {semesters.length}
@@ -120,31 +125,35 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
         </CardContent>
 
 
-      {/* Current Semester Display */}
+        {/* Current Semester Display */}
         <CardContent className="space-y-3">
           {currentSemester.courses.map((course, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+              className="p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
             >
-              <div className="flex-1 min-w-0">
-                <div className="font-medium">{course.code}</div>
-                <div className="text-sm text-muted-foreground">
-                  {course.name}
+                <div className="flex justify-between">
+                  <div className="flex flex-col justify-start text-left">
+                    <div className="font-medium">{course.code}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {course.name} • {course.credits} credits
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-start text-right">
+                    <div className="text-sm font-medium">{}Professor XYZ • 0/5</div>
+                    <div className="text-sm text-muted-foreground">Monday/Tuesday/Wednesday 11:00-12:20</div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 ml-4">
-                <span className="text-sm font-medium">{course.credits} credits</span>
-                {course.type && (
-                  <Badge 
-                    variant="secondary" 
+                { //Removing for now since backend is all "major"
+                  /*course.type && (
+                  <Badge
+                    variant="secondary"
                     className={`border ${getTypeColor(course.type)}`}
                   >
                     {course.type}
                   </Badge>
-                )}
+                )*/}
               </div>
-            </div>
           ))}
           {currentSemester.courses.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
