@@ -1705,6 +1705,10 @@ html {
   font-size: var(--font-size);
 }
 
+.text-professor {
+  text-align: right;
+}
+
 @property --tw-space-y-reverse {
   syntax: "*";
   inherits: false;

@@ -139,8 +139,8 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
                       {course.name} • {course.credits} credits
                     </div>
                   </div>
-                  <div className="flex flex-col justify-start text-right">
-                    <div className="text-sm font-medium">{}Professor XYZ • 0/5</div>
+                  <div className="flex flex-col justify-start text-professor">
+                    <div className="font-medium">{}Professor XYZ • 0/5</div>
                     <div className="text-sm text-muted-foreground">Monday/Tuesday/Wednesday 11:00-12:20</div>
                   </div>
                 </div>
