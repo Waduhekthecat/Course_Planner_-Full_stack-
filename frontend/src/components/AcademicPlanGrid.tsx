@@ -10,6 +10,11 @@ interface Course {
   name: string;
   credits: number;
   type?: 'Core' | 'Elective' | 'Major' | 'Minor';
+  professor: string;
+  professor_rating: number;
+  course_days: string;
+  course_start_time: string;
+  course_end_time: string;
 }
 
 interface Semester {
@@ -140,8 +145,8 @@ export function AcademicPlanGrid({ semesters, majorName }: AcademicPlanGridProps
                     </div>
                   </div>
                   <div className="flex flex-col justify-start text-professor">
-                    <div className="font-medium">{}Professor XYZ • 0/5</div>
-                    <div className="text-sm text-muted-foreground">Monday/Tuesday/Wednesday 11:00-12:20</div>
+                    <div className="font-medium">{course.professor} • {course.professor_rating}/5</div>
+                    <div className="text-sm text-muted-foreground">{course.course_days} {course.course_start_time}-{course.course_end_time}</div>
                   </div>
                 </div>
                 { //Removing for now since backend is all "major"

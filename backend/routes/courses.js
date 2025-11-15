@@ -104,32 +104,40 @@ router.post('/generate', async (req, res) => {
     reqCourses = reqCourses.map(c => {
       // Remove leading/trailing single quotes
       let cleaned = c.replace(/^'+|'+$/g, '');
-
+      
+      /** 
+       * No longer needed, cleaned up DB
       // Add a leading space for specific courses
       if (cleaned === 'Advanced Fibers' || cleaned === 'Advanced Life Drawing') {
         cleaned = ' ' + cleaned;
       }
-
+      */
       return cleaned;
     });
 
     console.log(reqCourses);
 
     const { data: requiredCourses, error } = await supabase
-      .from('Courses')
+      .from('combined_data')
       .select('*')
       .in('title', reqCourses);
 
     if (error) {
       console.error(error);
     } else {
+      //console.log("start query dump")
+      //console.log(requiredCourses)
+      //console.log("end query dump")
       console.log("required courses: ", reqCourses.length);
       console.log("courses found in DB: ", requiredCourses.length);
     };
 
+    /**
+     * No longer needed to to change in DB
     requiredCourses.forEach(course => {
       course.course_code = getCourseCode(course);
     });
+    */
     const prereqMap = buildPrerequisiteMap(requiredCourses);
 
     const priorityMap = calculateCoursePriority(prereqMap);
@@ -232,7 +240,12 @@ router.post('/generate', async (req, res) => {
         code: course.course_code,
         name: course.title,
         credits: course.credits,
-        type: 'Major' 
+        type: 'Major',
+        professor: `Dr. ${course.last_name}, ${course.first_name}`,
+        professor_rating: course.rating,
+        course_days: course.day_of_week,
+        course_start_time: course.start_time,
+        course_end_time: course.end_time
       }))
     }));
 
@@ -254,10 +267,13 @@ router.post('/generate', async (req, res) => {
   }
 });
 
-function getCourseCode(course) {
+/** 
+ * No longer needed due to change in DB
+ function getCourseCode(course) {
   if (!course || !course.department_ID || !course.course_id) return null;
   return `${course.department_ID}${course.course_id}`;
 }
+  */
 
 function prereqMet(course, completed, semester) {
   if (!course.Prerequisites || course.Prerequisites === 'NULL') return true;
