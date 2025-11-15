@@ -159,7 +159,7 @@ export default function App() {
               <CardContent>
                 <Select value={selectedMajor} onValueChange={setSelectedMajor}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose your major field of study" />
+                    <SelectValue placeholder="Choose your major" />
                   </SelectTrigger>
                   <SelectContent>
                     {majors.map((major) => (
@@ -190,13 +190,13 @@ export default function App() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Tags className="w-5 h-5" />
-                  Academic Interests & Focus Areas
+                  Academic Interests
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Select onValueChange={handleTagSelect}>
+                <Select value={selectedTags.length === 0 ? '' : undefined} onValueChange={handleTagSelect}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Add interests to customize your academic path" />
+                    <SelectValue placeholder="Add interests" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableTags
@@ -275,7 +275,7 @@ export default function App() {
                   <div>
                     <h3 className="text-muted-foreground">No academic plan generated yet</h3>
                     <p className="text-sm text-muted-foreground mt-2">
-                      Select a major and click "Generate Academic Plan" to see your 8-semester plan
+                      Select a major and click "Generate Academic Plan" to see your plan
                     </p>
                   </div>
                 </CardContent>
